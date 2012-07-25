@@ -1,9 +1,9 @@
--module(crutas_server, [L]).
--behaviour(gen_crutas).
+-module(crutas_calc, [L]).
+-behaviour(gen_calculator).
 -include("paths.hrl").
 
--define(LUA_IMPL, ?PRIV_DIR(crutas) ++ "/crutas_server.lua").
--export([init/0, add/2, new/0]).
+-define(LUA_IMPL, ?PRIV_DIR(crutas) ++ "/crutas_calc.lua").
+-export([sin/1, add/2, new/0]).
 
 new() ->
     {ok, L} = lua:new_state(),
@@ -11,8 +11,8 @@ new() ->
     ok = lual:dostring(L, Lua),
     {?MODULE, L}.
 
-init() ->
-    luam:call(L, "init", []).
-
 add(Arg1, Arg2) ->
     luam:call(L, "add", [Arg1, Arg2]).
+
+sin(Arg) ->
+    luam:call(L, "sin", [Arg]).
