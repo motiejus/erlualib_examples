@@ -12,7 +12,11 @@ new() ->
     {?MODULE, L}.
 
 add(Arg1, Arg2) ->
-    luam:call(L, "add", [Arg1, Arg2]).
+    R = luam:call(L, "add", [Arg1, Arg2]),
+    lua:close(L),
+    R.
 
 sin(Arg) ->
-    luam:call(L, "sin", [Arg]).
+    R = luam:call(L, "sin", [Arg]),
+    lua:close(L),
+    R.
