@@ -1,0 +1,8 @@
+/ebin/
+/deps/
+*.beam
+*.so
+*.swp
+*.o
+/.eunit/
+/rebar
