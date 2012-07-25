@@ -7,6 +7,6 @@ init_test() ->
     ?assertEqual(ok, L:init()).
 
 add_test_() -> [
-        ?_assertEqual(4, (crutas_server:new()):add(2, 2)),
-        ?_assertEqual(0, (crutas_server:new()):add(-1, 1))
+        ?_assertEqual({ok, 4}, (crutas_server:new()):add(2, 2)),
+        ?_assertEqual({ok, 0}, (crutas_server:new()):add(-1, 1))
     ].

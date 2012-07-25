@@ -4,5 +4,5 @@ function init()
 end
 
 function add(arg1, arg2)
-    return arg1 + arg2
+    return erlang.atom("ok"), arg1 + arg2
 end
