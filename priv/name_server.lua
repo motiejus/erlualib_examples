@@ -5,18 +5,26 @@ function call(tbl, req)
 end
 
 function init()
-    return erlang.atom("ok"), {} -- return empty state
+    -- This empty table will be our state
+    return erlang.atom("ok"), {}
 end
 
+-- Forwards the call to function which is specified in req[1]. Returns
+-- {reply, Return, NewTable}. Return and NewTable are values from the
+-- callback.
 function handle_call(req, from, tbl)
     return erlang.atom("reply"), call(tbl, req)
 end
 
+-- Adds name to State. Returns {ok, Table}.
 function add_name(tbl, name, address)
     tbl[name] = address
     return erlang.atom("ok"), tbl
 end
 
+-- Gets name table and current name. Returns:
+-- { 'error' | Value, Table}
+-- Note: table is unmodified in this call.
 function get_addr(tbl, name)
     return tbl[name] or erlang.atom("error"), tbl
 end
