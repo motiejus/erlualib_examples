@@ -17,8 +17,8 @@
 %%% 1. Has -behaviour(some_behaviour).
 %%% 2. some_behaviour is compiled
 %%%     (you can achieve this using erl_first_files in rebar.config)
-%%% 3. Has -implemented_in(String).
-%%% 4. String is a single Erlang expression (see below).
+%%% 3. Has -implemented_in(String | {priv, String}).
+%%% 4. String is a single Erlang expression or String (see below).
 %%%
 %%% Filename is written as abstract form in -implemented_in(String) attribute.
 %%% In simple words, String must be 1 Erlang expression.
@@ -27,6 +27,15 @@
 %%% * "code:priv_dir(crutas) ++ \"/crutas_calc.lua\"."
 %%% * "fun() -> ok, code:priv_dir(crutas) ++ \"/crutas_calc.lua\" end()."
 %%% Note that trailing dots are important.
+%%%
+%%% A convenient alias for
+%%%
+%%% -implemented_in("filename:join(filename:dirname(filename:dirname("
+%%%                 "code:which(?MODULE))), \"priv\") ++ \"/FILE.lua\".").
+%%% Is this:
+%%% -implemented_in({priv, "/FILE.lua"}).
+%%%
+%%% The latter is recommended.
 -module(lua_behaviour).
 
 -export([parse_transform/2]).
@@ -76,23 +85,19 @@ make_fun_nodes(L, Funs, ImplementedIn) ->
         lists:reverse(ABSFuns)
     }.
 
-make_fun(BaseLine, Name, Arity, LuaModABS) ->
+make_fun(L, Name, Arity, LuaModABS) ->
     Args = [list_to_atom("Arg"++integer_to_list(I)) || I <- lists:seq(1,Arity)],
-    Header = [{var, BaseLine, Arg} || Arg <- Args],
-    CallArgs = call_args(Args, BaseLine+1),
-    {function,BaseLine,Name,Arity,
-        [{clause,BaseLine,
+    Header = [{var, L, Arg} || Arg <- Args],
+    CallArgs = call_args(Args, L+1),
+    {function,L,Name,Arity,
+        [{clause,L,
                 %[{var,8,'Arg1'},{var,8,'Arg2'}],
                 Header,
                 [],
-                [{call,BaseLine+1,
-                        {remote,BaseLine+1,
-                            {atom,BaseLine+1,luam},{atom,BaseLine+1,one_call}
-                        },
+                [{call,L+1, {remote,L+1, {atom,L+1,luam},{atom,L+1,one_call}},
                         [
-                            %{string,BaseLine+1,"crutas.lua"},
                             LuaModABS,
-                            {string,BaseLine+1,atom_to_list(Name)},
+                            {string,L+1,atom_to_list(Name)},
                             %{cons,9,
                             %    {var,9,'Arg1'},
                             %    {cons,9,{var,9,'Arg2'},{nil,9}}}
@@ -104,14 +109,21 @@ call_args([], Line) ->
 call_args([Arg|Args], Line) ->
     {cons, Line, {var, Line, Arg}, call_args(Args, Line)}.
 
+%% @doc takes -implemented_in(Eval) and returns abstract form for module
+%%
+%% Simple string is not enough, since we do not want to hardcode full paths.
+%% code:priv_dir/1 rarely works, so we have to do some hacking.
 get_lua_mod_expr(ModAtom, Eval) ->
-    % Allow shortcut {priv, FileRelativeToPrivDir}
+    % Convert shortcut {priv, FileRelativeToPrivDir} to UglyString
     Mod = atom_to_list(ModAtom),
     LuaModExpr = case Eval of
         {priv, File} -> 
             "filename:join(filename:dirname(filename:dirname(code:which("
             ++ Mod ++ "))), \"priv\") ++ \"" ++ File ++ "\".";
         _ when is_list(Eval) ->
+            % ?MODULE in parse_transform does not mean anything. Replace
+            % to what we have.
+            % TODO: make re:replace at word boundaries.
             binary_to_list(iolist_to_binary(re:replace(Eval, "\\?MODULE", Mod)))
     end,
 
