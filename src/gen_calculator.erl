@@ -1,4 +1,4 @@
 -module(gen_calculator).
 
--callback add(integer(), integer()) -> integer().
--callback sin(number()) -> number().
+-callback add(integer(), integer()) -> {ok, integer()}.
+-callback sin(number()) -> {ok, number()}.
