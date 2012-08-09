@@ -1,4 +1,4 @@
-{application, crutas,
+{application, erlualib_examples,
  [
   {description, ""},
   {vsn, "1"},
@@ -7,6 +7,6 @@
                   kernel,
                   stdlib
                  ]},
-  {mod, { crutas_app, []}},
+  {mod, { erlualib_examples_app, []}},
   {env, []}
  ]}.

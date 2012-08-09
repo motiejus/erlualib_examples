@@ -1,4 +1,4 @@
--module(crutas_app).
+-module(erlualib_examples_app).
 
 -behaviour(application).
 
@@ -10,7 +10,7 @@
 %% ===================================================================
 
 start(_StartType, _StartArgs) ->
-    crutas_sup:start_link().
+    erlualib_examples_sup:start_link().
 
 stop(_State) ->
     ok.

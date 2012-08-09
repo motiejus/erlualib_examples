@@ -1,5 +1,5 @@
 
--module(crutas_sup).
+-module(erlualib_examples_sup).
 
 -behaviour(supervisor).
 
